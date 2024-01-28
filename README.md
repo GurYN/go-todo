@@ -1,7 +1,7 @@
 # GO TODO
-A quick example of a TODO list app using Go and.
+A quick example of a TODO list app using Go language.
 
-![Screenshot](/docs/medias/screenshot.png)
+![Screenshot](/doc/medias/screenshot.png)
 
 # Run it
 Get the dependencies:
