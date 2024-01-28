@@ -1,26 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="/css/pico.min.css">
     <title>{{.Title}}</title>
 </head>
 
 <body>
     <div class="container" style="margin: 1.2rem auto;">
-            <hgroup>
-                <h2>Welcome 👋</h2>
-                <p>Organize your daily work!</p>
-            </hgroup>
+        <hgroup>
+            <h2>Welcome 👋</h2>
+            <p>Organize your daily work!</p>
+        </hgroup>
         <details>
             <summary>Create a new task</summary>
             <form method="post" action="/create">
-                    <input type="text" id="Title" name="Title" placeholder="Describe your task" required>
-                    <input type="submit" value="Create">
+                <input type="text" id="Title" name="Title" placeholder="Describe your task" required>
+                <input type="submit" value="Create">
             </form>
-          </details>          
+        </details>
         <table>
             <thead>
                 <tr>
@@ -33,16 +40,18 @@
                 {{range .Tasks}}
                 <tr>
                     <td>
-                        <kbd><strong>
-                            {{ if .Completed }}<del>{{ end }}
-                            {{.Title}}
-                            {{ if .Completed }}</del>{{ end }}
-                        </strong></kbd>
+                        <kbd>
+                            <strong>
+                                {{ if .Completed }}<del>{{ end }}
+                                {{.Title}}
+                                {{ if .Completed }}</del>{{ end }}
+                            </strong>
+                        </kbd>
                     </td>
                     <td>
                         {{ if not .Completed }}<a href="/complete/{{ .ID }}">{{ end }}
-                        <input type="checkbox" role="switch" disabled{{ if .Completed }} checked{{ end }}>
-                        {{ if not .Completed }}</a>{{ end }}
+                            <input type="checkbox" role="switch" disabled{{ if .Completed }} checked{{ end }}>
+                            {{ if not .Completed }}</a>{{ end }}
                     </td>
                     <td><a href="/delete/{{ .ID }}" role="button">Delete</a></td>
                 </tr>
@@ -51,4 +60,5 @@
         </table>
     </div>
 </body>
+
 </html>

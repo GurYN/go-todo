@@ -20,7 +20,7 @@ func Root(app *fiber.App) {
 		}
 
 		return c.Render("index", fiber.Map{
-			"Title": "Hello, World!",
+			"Title": "GO Todo - Welcome",
 			"Tasks": todosList,
 		})
 	})
