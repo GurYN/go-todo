@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"fmt"
+	"encoding/json"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -9,8 +9,8 @@ import (
 	"github.com/guryn/go-todo/internal/repositories"
 )
 
-func Root(app *fiber.App) {
-	r := app.Group("/")
+func ApiRoute(app *fiber.App) {
+	r := app.Group("/api/todo")
 	todos := repositories.NewTodoRepository()
 
 	r.Get("/", func(c *fiber.Ctx) error {
@@ -19,13 +19,10 @@ func Root(app *fiber.App) {
 			return c.SendString(err.Error())
 		}
 
-		return c.Render("index", fiber.Map{
-			"Title": "GO Todo - Welcome",
-			"Tasks": todosList,
-		})
+		return c.JSON(todosList)
 	})
 
-	r.Get("/details/:id", func(c *fiber.Ctx) error {
+	r.Get("/:id", func(c *fiber.Ctx) error {
 		id, err := uuid.Parse(c.Params("id"))
 		if err != nil {
 			return c.SendString(err.Error())
@@ -36,21 +33,45 @@ func Root(app *fiber.App) {
 			return c.SendString(err.Error())
 		}
 
-		return c.SendString(fmt.Sprintf("%v", todo))
+		return c.JSON(todo)
 	})
 
-	r.Post("/create", func(c *fiber.Ctx) error {
+	r.Post("/", func(c *fiber.Ctx) error {
+		todo := models.Todo{}
+		err := json.Unmarshal(c.Body(), &todo)
+		if err != nil {
+			return c.SendString("Failed to parse request: %v" + err.Error())
+		}
+
+		result, add_err := todos.Create(todo)
+		if add_err != nil {
+			return c.SendString(add_err.Error())
+		}
+
+		return c.JSON(result)
+	})
+
+	r.Put("/:id", func(c *fiber.Ctx) error {
+		id, err := uuid.Parse(c.Params("id"))
+		if err != nil {
+			return c.SendString(err.Error())
+		}
+
 		var todo models.Todo
 		if err := c.BodyParser(&todo); err != nil {
 			return c.SendString(err.Error())
 		}
 
-		todos.Create(todo)
+		todo.ID = id
+		_, err = todos.Update(todo)
+		if err != nil {
+			return c.SendString(err.Error())
+		}
 
-		return c.Redirect("/")
+		return c.JSON(todo)
 	})
 
-	r.Get("/complete/:id", func(c *fiber.Ctx) error {
+	r.Get("/:id/complete", func(c *fiber.Ctx) error {
 		id, err := uuid.Parse(c.Params("id"))
 		if err != nil {
 			return c.SendString(err.Error())
@@ -67,10 +88,10 @@ func Root(app *fiber.App) {
 			return c.SendString(err.Error())
 		}
 
-		return c.Redirect("/")
+		return c.SendString("Completed")
 	})
 
-	r.Get("/delete/:id", func(c *fiber.Ctx) error {
+	r.Delete("/:id", func(c *fiber.Ctx) error {
 		id, err := uuid.Parse(c.Params("id"))
 		if err != nil {
 			return c.SendString(err.Error())
@@ -81,6 +102,6 @@ func Root(app *fiber.App) {
 			return c.SendString(err.Error())
 		}
 
-		return c.Redirect("/")
+		return c.SendString("Deleted")
 	})
 }

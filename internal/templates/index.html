@@ -23,10 +23,10 @@
         </hgroup>
         <details>
             <summary>Create a new task</summary>
-            <form method="post" action="/create">
-                <input type="text" id="Title" name="Title" placeholder="Describe your task" required>
-                <input type="submit" value="Create">
-            </form>
+          
+                <input type="text" id="new_title" name="Title" placeholder="Describe your task" required>
+                <button id="create_button">Create</button>
+        
         </details>
         <table>
             <thead>
@@ -36,29 +36,11 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                {{range .Tasks}}
-                <tr>
-                    <td>
-                        <kbd>
-                            <strong>
-                                {{ if .Completed }}<del>{{ end }}
-                                {{.Title}}
-                                {{ if .Completed }}</del>{{ end }}
-                            </strong>
-                        </kbd>
-                    </td>
-                    <td>
-                        {{ if not .Completed }}<a href="/complete/{{ .ID }}">{{ end }}
-                        <input type="checkbox" role="switch" disabled{{ if .Completed }} checked{{ end }}>
-                        {{ if not .Completed }}</a>{{ end }}
-                    </td>
-                    <td><a href="/delete/{{ .ID }}" role="button">Delete</a></td>
-                </tr>
-                {{end}}
+            <tbody id="todo-list">
             </tbody>
         </table>
     </div>
+    <script src=/js/main.js></script>
 </body>
 
 </html>

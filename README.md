@@ -6,12 +6,19 @@ A quick example of a TODO list app using Go language.
 # Benchmark
 Amazing results with 50 000 requests executed in less than 1 second!
 
+Note: The benchmark was executed on a MacBook Pro M1 Pro and 16 GB of RAM using Apache HTTP server benchmarking tool.
+
 ![Benchmark](/doc/medias/benchmark.png)
 
 # Run it
 Get the dependencies:
 ```bash
 go mod download
+```
+
+Copy the `.env.example` file to `.env` and set the environment variables:
+```bash
+cp .env.example .env
 ```
 
 And execute the makefile:
