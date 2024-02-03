@@ -2,12 +2,11 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
-	"os"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/guryn/go-todo/internal/models"
+	"github.com/guryn/go-todo/internal/services"
 )
 
 func WebsocketRoute(app *fiber.App) {
@@ -15,6 +14,7 @@ func WebsocketRoute(app *fiber.App) {
 	wsClients := []websocket.Conn{}
 
 	r.Get("/", websocket.New(func(c *websocket.Conn) {
+		todoService := services.NewTodoService()
 		wsClients = append(wsClients, *c)
 
 		for {
@@ -31,7 +31,7 @@ func WebsocketRoute(app *fiber.App) {
 
 			switch string(req.Action) {
 			case "get_list":
-				result, err := getList()
+				result, err := todoService.GetList()
 				if err != nil {
 					c.WriteJSON([]byte("{\"error\": \"Failed to retrieve todos\"}}"))
 					continue
@@ -45,7 +45,7 @@ func WebsocketRoute(app *fiber.App) {
 				todo := models.Todo{}
 				todo.Title = req.Data.(map[string]interface{})["title"].(string)
 
-				result, err := create(todo)
+				result, err := todoService.Create(todo)
 				if err != nil {
 					c.WriteJSON([]byte("{\"error\": \"Failed to create todo\"}}"))
 					continue
@@ -58,7 +58,7 @@ func WebsocketRoute(app *fiber.App) {
 					}
 				}
 			case "complete":
-				err := complete(req.Data.(string))
+				err := todoService.Complete(req.Data.(string))
 				if err != nil {
 					c.WriteJSON([]byte("{\"error\": \"Failed to complete todo\"}}"))
 					continue
@@ -71,7 +71,7 @@ func WebsocketRoute(app *fiber.App) {
 					}
 				}
 			case "delete":
-				err := delete(req.Data.(string))
+				err := todoService.Delete(req.Data.(string))
 				if err != nil {
 					c.WriteJSON([]byte("{\"error\": \"Failed to delete todo\"}}"))
 					continue
@@ -95,61 +95,4 @@ func WebsocketRoute(app *fiber.App) {
 			}
 		}
 	}))
-}
-
-func getList() ([]models.Todo, error) {
-	request := fiber.Get(fmt.Sprintf("%s/api/todo", os.Getenv("API_URL")))
-	_, data, errs := request.Bytes()
-	if errs != nil {
-		return nil, errs[0]
-	}
-
-	output := []models.Todo{}
-	err := json.Unmarshal(data, &output)
-	if err != nil {
-		return nil, err
-	}
-
-	return output, nil
-}
-
-func create(d models.Todo) (models.Todo, error) {
-	request := fiber.Post(fmt.Sprintf("%s/api/todo", os.Getenv("API_URL")))
-	input, err := json.Marshal(d)
-	if err != nil {
-		return models.Todo{}, err
-	}
-
-	_, data, errs := request.Body(input).Bytes()
-	if errs != nil {
-		return models.Todo{}, errs[0]
-	}
-
-	output := models.Todo{}
-	parse_err := json.Unmarshal(data, &output)
-	if parse_err != nil {
-		return models.Todo{}, parse_err
-	}
-
-	return output, nil
-}
-
-func complete(id string) error {
-	request := fiber.Get(fmt.Sprintf("%s/api/todo/%s/complete", os.Getenv("API_URL"), id))
-	_, _, errs := request.Bytes()
-	if errs != nil {
-		return errs[0]
-	}
-
-	return nil
-}
-
-func delete(id string) error {
-	request := fiber.Delete(fmt.Sprintf("%s/api/todo/%s", os.Getenv("API_URL"), id))
-	_, _, errs := request.Bytes()
-	if errs != nil {
-		return errs[0]
-	}
-
-	return nil
 }
