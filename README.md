@@ -1,7 +1,8 @@
 # GO TODO [![build-project](https://github.com/GurYN/go-todo/actions/workflows/build-project.yml/badge.svg)](https://github.com/GurYN/go-todo/actions/workflows/build-project.yml) [![Publish Docker image](https://github.com/GurYN/go-todo/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/GurYN/go-todo/actions/workflows/docker-publish.yml)
-A quick example of a TODO list app using Go language.
 
-![Screenshot](/doc/medias/screenshot.png)
+A quick example of a TODO list app using Go language. The app include a REST API and a dynamic web interface using websockets.
+
+![Screenshot](/doc/medias/demo.gif)
 
 # Benchmark
 Amazing results with 50 000 requests executed in less than 1 second!
