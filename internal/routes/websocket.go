@@ -12,10 +12,10 @@ import (
 
 func WebsocketRoute(app *fiber.App) {
 	r := app.Group("/ws/todo")
-	websockets := []websocket.Conn{}
+	wsClients := []websocket.Conn{}
 
 	r.Get("/", websocket.New(func(c *websocket.Conn) {
-		websockets = append(websockets, *c)
+		wsClients = append(wsClients, *c)
 
 		for {
 			_, msg, read_err := c.ReadMessage()
@@ -23,7 +23,7 @@ func WebsocketRoute(app *fiber.App) {
 				c.Close()
 				break
 			}
-			req := models.ActionRequest{}
+			req := models.WebsocketRequest{}
 			if json.Unmarshal(msg, &req) != nil {
 				c.WriteJSON([]byte("{\"error\": \"Failed to parse request\"}}"))
 				continue
@@ -37,19 +37,22 @@ func WebsocketRoute(app *fiber.App) {
 					continue
 				}
 
-				if c.WriteJSON(models.TodoList{Answer: "todo_list", Data: result}) != nil {
+				if c.WriteJSON(models.WebsocketResponse{Answer: "todo_list", Data: result}) != nil {
 					c.WriteJSON([]byte("{\"error\": \"Failed to send todos\"}}"))
 					continue
 				}
 			case "create":
-				result, err := create(req.Data)
+				todo := models.Todo{}
+				todo.Title = req.Data.(map[string]interface{})["title"].(string)
+
+				result, err := create(todo)
 				if err != nil {
 					c.WriteJSON([]byte("{\"error\": \"Failed to create todo\"}}"))
 					continue
 				}
 
-				for _, ws := range websockets {
-					if ws.WriteJSON(models.TodoList{Answer: "added_item", Data: result}) != nil {
+				for _, ws := range wsClients {
+					if ws.WriteJSON(models.WebsocketResponse{Answer: "added_item", Data: result}) != nil {
 						ws.WriteJSON([]byte("{\"error\": \"Failed to send todo\"}}"))
 						continue
 					}
@@ -61,8 +64,8 @@ func WebsocketRoute(app *fiber.App) {
 					continue
 				}
 
-				for _, ws := range websockets {
-					if ws.WriteJSON(models.TodoList{Answer: "completed_item", Data: req.Data.(string)}) != nil {
+				for _, ws := range wsClients {
+					if ws.WriteJSON(models.WebsocketResponse{Answer: "completed_item", Data: req.Data.(string)}) != nil {
 						ws.WriteJSON([]byte("{\"error\": \"Failed to send todo\"}}"))
 						continue
 					}
@@ -74,8 +77,8 @@ func WebsocketRoute(app *fiber.App) {
 					continue
 				}
 
-				for _, ws := range websockets {
-					if ws.WriteJSON(models.TodoList{Answer: "deleted_item", Data: req.Data.(string)}) != nil {
+				for _, ws := range wsClients {
+					if ws.WriteJSON(models.WebsocketResponse{Answer: "deleted_item", Data: req.Data.(string)}) != nil {
 						ws.WriteJSON([]byte("{\"error\": \"Failed to send todo\"}}"))
 						continue
 					}
@@ -85,9 +88,9 @@ func WebsocketRoute(app *fiber.App) {
 			}
 		}
 
-		for i, ws := range websockets {
+		for i, ws := range wsClients {
 			if ws.Conn == c.Conn {
-				websockets = append(websockets[:i], websockets[i+1:]...)
+				wsClients = append(wsClients[:i], wsClients[i+1:]...)
 				break
 			}
 		}
@@ -101,34 +104,34 @@ func getList() ([]models.Todo, error) {
 		return nil, errs[0]
 	}
 
-	lst := []models.Todo{}
-	err := json.Unmarshal(data, &lst)
+	output := []models.Todo{}
+	err := json.Unmarshal(data, &output)
 	if err != nil {
 		return nil, err
 	}
 
-	return lst, nil
+	return output, nil
 }
 
-func create(d any) (models.Todo, error) {
+func create(d models.Todo) (models.Todo, error) {
 	request := fiber.Post(fmt.Sprintf("%s/api/todo", os.Getenv("API_URL")))
-	inp, err := json.Marshal(d)
+	input, err := json.Marshal(d)
 	if err != nil {
 		return models.Todo{}, err
 	}
 
-	_, data, errs := request.Body(inp).Bytes()
+	_, data, errs := request.Body(input).Bytes()
 	if errs != nil {
 		return models.Todo{}, errs[0]
 	}
 
-	item := models.Todo{}
-	parse_err := json.Unmarshal(data, &item)
+	output := models.Todo{}
+	parse_err := json.Unmarshal(data, &output)
 	if parse_err != nil {
 		return models.Todo{}, parse_err
 	}
 
-	return item, nil
+	return output, nil
 }
 
 func complete(id string) error {
