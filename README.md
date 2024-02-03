@@ -1,4 +1,4 @@
-# GO TODO [![build-project](https://github.com/GurYN/go-todo/actions/workflows/build-project.yml/badge.svg)](https://github.com/GurYN/go-todo/actions/workflows/build-project.yml)
+# GO TODO [![build-project](https://github.com/GurYN/go-todo/actions/workflows/build-project.yml/badge.svg)](https://github.com/GurYN/go-todo/actions/workflows/build-project.yml) [![Publish Docker image](https://github.com/GurYN/go-todo/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/GurYN/go-todo/actions/workflows/docker-publish.yml)
 A quick example of a TODO list app using Go language.
 
 ![Screenshot](/doc/medias/screenshot.png)
@@ -11,6 +11,7 @@ Note: The benchmark was executed on a MacBook Pro M1 Pro and 16 GB of RAM using 
 ![Benchmark](/doc/medias/benchmark.png)
 
 # Run it
+## Local
 Get the dependencies:
 ```bash
 go mod download
@@ -24,4 +25,8 @@ cp .env.example .env
 And execute the makefile:
 ```bash
 make
+```
+## Docker
+```bash
+docker run -p 3000:3000 -e SERVER_PORT=3000 -e API_URL=http://localhost:3000 --name go-todo -d vcibelli/go-todo:latest
 ```
