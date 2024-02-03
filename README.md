@@ -27,6 +27,7 @@ And execute the makefile:
 make
 ```
 ## Docker
+Image available on Docker Hub: [vcibelli/go-todo](https://hub.docker.com/r/vcibelli/go-todo)
 ```bash
 docker run -p 3000:3000 -e SERVER_PORT=3000 -e API_URL=http://localhost:3000 --name go-todo -d vcibelli/go-todo:latest
 ```
